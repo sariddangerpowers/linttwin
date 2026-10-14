@@ -179,6 +179,19 @@ def run_biome(biome, cfg_dir, files, write=False, only=None):
     return out, r
 
 
+def eslint_rows(msgs, pairs):
+    """ESLint messages -> [(rewrite rule, line, text)]. Two ESLint rules that map to one rewrite rule (e.g. core and
+    unicorn `no-negated-condition` -> Biome `noNegationElse`) report the same node once; distinct reports on one line
+    all count."""
+    seen, rows = set(), []
+    for m in msgs:
+        t = pairs.get(m["rule"])
+        if t and (t, m["line"], m.get("col")) not in seen:
+            seen.add((t, m["line"], m.get("col")))
+            rows.append((t, m["line"], "%s: %s" % (m["rule"], m["msg"])))
+    return rows
+
+
 def match(e_list, o_list):
     """multiset match per rule. e_list: [(rule, line)] from ESLint; o_list: [(rule, (lines...))] from the rewrite.
     Pass 1: the ESLint line is one of the rewrite's label lines; pass 2: the closest label line within 2 lines."""
@@ -273,13 +286,7 @@ def check_chunk(job):
                 if any(m["fatal"] for m in r["msgs"]):
                     E[r["path"]] = None
                     continue
-                seen, rows = set(), []
-                for m in r["msgs"]:
-                    t = pairs.get(m["rule"])
-                    if t and (t, m["line"]) not in seen:
-                        seen.add((t, m["line"]))
-                        rows.append((t, m["line"], "%s: %s" % (m["rule"], m["msg"])))
-                E[r["path"]] = rows
+                E[r["path"]] = eslint_rows(r["msgs"], pairs)
         for f in files:
             if E.get(f, []) is None:
                 continue
