@@ -28,7 +28,7 @@ and all 18 still reproduce on the latest releases (October 2026).
 
 | | Tool | Rule | What goes wrong | Issue |
 |---|---|---|---|---|
-| OX‑1 | oxlint | `no-var` | Safe fix turns a redeclared `var` into two `const` declarations — **the code no longer parses** | [oxc#27694](https://github.com/oxc-project/oxc/issues/27694) |
+| OX‑1 | oxlint | `no-var` | Safe fix turns a redeclared `var` into two `const` declarations — **the code no longer parses** | [oxc#27694](https://github.com/oxc-project/oxc/issues/27694) · confirmed |
 | OX‑2 | oxlint | `unicorn/catch-error-name` | Safe fix renames `e` onto an existing `error` binding — **SyntaxError** | |
 | OX‑3 | oxlint | `sort-keys` | Autofix appends its comma inside a trailing comment | |
 | OX‑4 | oxlint | `no-setter-return` | Misses returning setters in `Object.defineProperty` descriptors | |
