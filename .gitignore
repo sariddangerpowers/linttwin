@@ -1,0 +1,10 @@
+__pycache__/
+*.egg-info/
+.venv/
+.linttwin/
+results/
+corpus/
+dist/
+build/
+node_modules/
+.pytest_cache/

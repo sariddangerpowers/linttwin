@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "linttwin"
+version = "0.1.0"
+description = "Do Rust-rewritten linters keep their promises? Differential and fix-safety testing of ruff, oxlint and Biome against flake8, pylint and ESLint."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Ben Sarid" }]
+dependencies = ["pyflakes>=3.2"]
+keywords = ["linter", "differential testing", "ruff", "oxlint", "biome", "eslint", "flake8", "autofix"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.urls]
+Repository = "https://github.com/sariddangerpowers/linttwin"
+
+[project.scripts]
+linttwin = "linttwin.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+linttwin = ["js_helper.mjs"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
