@@ -12,6 +12,18 @@ def test_repeated_reports_on_one_line_all_count():
     assert len(rows) == 2
 
 
+def test_nested_nodes_reported_at_one_position_all_count():
+    rows = eslint_rows([msg("no-bitwise", 4, 9), msg("no-bitwise", 4, 9)], {"no-bitwise": "no-bitwise"})
+    assert len(rows) == 2
+
+
+def test_two_mapped_rules_reporting_the_same_nodes_count_once_per_node():
+    pairs = {"no-negated-condition": "style/noNegationElse", "unicorn/no-negated-condition": "style/noNegationElse"}
+    rows = eslint_rows([msg("no-negated-condition", 3, 1), msg("no-negated-condition", 3, 1),
+                        msg("unicorn/no-negated-condition", 3, 1), msg("unicorn/no-negated-condition", 3, 1)], pairs)
+    assert len(rows) == 2
+
+
 def test_two_eslint_rules_on_the_same_node_count_once():
     pairs = {"no-negated-condition": "style/noNegationElse", "unicorn/no-negated-condition": "style/noNegationElse"}
     rows = eslint_rows([msg("no-negated-condition", 3, 1), msg("unicorn/no-negated-condition", 3, 1)], pairs)

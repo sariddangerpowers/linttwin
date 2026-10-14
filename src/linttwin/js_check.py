@@ -180,16 +180,18 @@ def run_biome(biome, cfg_dir, files, write=False, only=None):
 
 
 def eslint_rows(msgs, pairs):
-    """ESLint messages -> [(rewrite rule, line, text)]. Two ESLint rules that map to one rewrite rule (e.g. core and
-    unicorn `no-negated-condition` -> Biome `noNegationElse`) report the same node once; distinct reports on one line
-    all count."""
-    seen, rows = set(), []
+    """ESLint messages -> [(rewrite rule, line, text)]. Every report of one ESLint rule counts, including several at one
+    position (nested nodes start at the same place: `a | b | c`, a regex with two unnamed groups). When two ESLint rules
+    map to one rewrite rule (core and unicorn `no-negated-condition` -> Biome `noNegationElse`), they report the same
+    nodes, so each position keeps the larger of their counts."""
+    per, text = collections.defaultdict(collections.Counter), {}
     for m in msgs:
         t = pairs.get(m["rule"])
-        if t and (t, m["line"], m.get("col")) not in seen:
-            seen.add((t, m["line"], m.get("col")))
-            rows.append((t, m["line"], "%s: %s" % (m["rule"], m["msg"])))
-    return rows
+        if t:
+            key = (t, m["line"], m.get("col"))
+            per[key][m["rule"]] += 1
+            text.setdefault(key, "%s: %s" % (m["rule"], m["msg"]))
+    return [(k[0], k[1], text[k]) for k, cnt in per.items() for _ in range(max(cnt.values()))]
 
 
 def match(e_list, o_list):
