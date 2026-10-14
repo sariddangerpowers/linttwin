@@ -30,7 +30,7 @@ and all 18 still reproduce on the latest releases (October 2026).
 |---|---|---|---|---|
 | OX‑1 | oxlint | `no-var` | Safe fix turns a redeclared `var` into two `const` declarations — **the code no longer parses** | [oxc#27694](https://github.com/oxc-project/oxc/issues/27694) · fixed |
 | OX‑2 | oxlint | `unicorn/catch-error-name` | Safe fix renames `e` onto an existing `error` binding — **SyntaxError**, or silently captures an outer `error` | [oxc#27700](https://github.com/oxc-project/oxc/issues/27700) · fixed |
-| OX‑3 | oxlint | `sort-keys` | Autofix appends its comma inside a trailing comment | |
+| OX‑3 | oxlint | `sort-keys` | Autofix moves the object's trailing comma into a line comment | [oxc#27704](https://github.com/oxc-project/oxc/issues/27704) |
 | OX‑4 | oxlint | `no-setter-return` | Misses returning setters in `Object.defineProperty` descriptors | |
 | OX‑5 | oxlint | `no-div-regex` | Misses `/=+$/`: a leading `=` with a quantifier | |
 | OX‑6 | oxlint | `no-self-compare` | Reports `"Ā" !== "Ā"` (equal values, different source text) | |
