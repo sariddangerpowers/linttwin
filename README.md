@@ -29,7 +29,7 @@ and all 18 still reproduce on the latest releases (October 2026).
 | | Tool | Rule | What goes wrong | Issue |
 |---|---|---|---|---|
 | OX‑1 | oxlint | `no-var` | Safe fix turns a redeclared `var` into two `const` declarations — **the code no longer parses** | [oxc#27694](https://github.com/oxc-project/oxc/issues/27694) · fixed |
-| OX‑2 | oxlint | `unicorn/catch-error-name` | Safe fix renames `e` onto an existing `error` binding — **SyntaxError** | |
+| OX‑2 | oxlint | `unicorn/catch-error-name` | Safe fix renames `e` onto an existing `error` binding — **SyntaxError**, or silently captures an outer `error` | [oxc#27700](https://github.com/oxc-project/oxc/issues/27700) · confirmed |
 | OX‑3 | oxlint | `sort-keys` | Autofix appends its comma inside a trailing comment | |
 | OX‑4 | oxlint | `no-setter-return` | Misses returning setters in `Object.defineProperty` descriptors | |
 | OX‑5 | oxlint | `no-div-regex` | Misses `/=+$/`: a leading `=` with a quantifier | |
@@ -38,9 +38,9 @@ and all 18 still reproduce on the latest releases (October 2026).
 | OX‑8 | oxlint | `id-length` | Misses destructuring assignment targets | |
 | OX‑9 | oxlint | `no-shadow` | Misses a named function expression shadowing the variable it initialises | |
 | OX‑10 | oxlint | `unicorn/consistent-function-scoping` | Reports functions that refer to themselves through their own binding | |
-| RF‑1 | ruff | `RET505`–`RET508`, `PLW0120` | Dedent computed from the wrong comment: the fix fails with a syntax error, or **moves code into the `if` block** | [ruff#29381](https://github.com/astral-sh/ruff/issues/29381) · confirmed |
-| RF‑2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | |
-| RF‑3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | |
+| RF‑1 | ruff | `RET505`–`RET508`, `PLW0120` | Dedent computed from the wrong comment: the fix fails with a syntax error, or **moves code into the `if` block** | [ruff#29381](https://github.com/astral-sh/ruff/issues/29381) · fixed |
+| RF‑2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
+| RF‑3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
 | RF‑4 | ruff | `UP035` | Safe fix deletes the comment on a multi-line import (here a `noqa`) | |
 | BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | |
 | BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | |
