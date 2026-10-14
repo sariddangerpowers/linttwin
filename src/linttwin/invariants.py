@@ -17,6 +17,7 @@ import ast
 import collections
 import hashlib
 
+KINDS = ("I1_dead_code", "I2_moved_into_block")      # the keys check() reports
 TERMINATORS = (ast.Return, ast.Raise, ast.Continue, ast.Break)
 BLOCK_FIELDS = ("body", "orelse", "finalbody", "handlers", "cases")
 TRIVIAL = (ast.Pass, ast.Continue, ast.Break)

@@ -235,7 +235,7 @@ def check_fixes(pkg, root, rels, src, opts, out):
                     ruff_json(ruff, [p], ["--select", code, "--fix"])
                     f1 = c.rd(p)
                     if f1 != src[r]:
-                        v1 = violations(src[r], f1)
+                        v1 = violations(src[r], f1, kinds=set(v))
                         if v1:
                             hits.append({"rule": code, "kinds": sorted(v1), "detail": v1})
                             hdiff = hdiff or c.udiff(src[r], f1, r)
@@ -248,23 +248,31 @@ def check_fixes(pkg, root, rels, src, opts, out):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def violations(orig: str, fixed: str) -> dict:
+def violations(orig: str, fixed: str, kinds=None) -> dict:
+    """the checks this fix fails. `kinds` (rule attribution) limits the work to the checks that failed for the full fix;
+    the syntax check always runs, since the others need code that parses."""
+    def want(*ks):
+        return kinds is None or any(k in kinds for k in ks)
+
     v = {}
     e = c.compiles(fixed)
     if e:
         v["syntax"] = e
-    co, cf = c.py_comments(orig), c.py_comments(fixed)
-    if co is not None and cf is not None:
-        lost = co - cf
-        if lost:
-            v["comment_lost"] = sorted(lost.elements())[:10]
+    if want("comment_lost"):
+        co, cf = c.py_comments(orig), c.py_comments(fixed)
+        if co is not None and cf is not None:
+            lost = co - cf
+            if lost:
+                v["comment_lost"] = sorted(lost.elements())[:10]
     if "syntax" not in v:
-        uf, uo = c.py_undefined_names(fixed), c.py_undefined_names(orig)
-        if uf is not None and uo is not None:
-            new = uf - uo
-            if new:
-                v["undefined_name"] = sorted("%s %s" % (k, a) for (k, a) in new.elements())[:10]
-        v.update(invariants.check(orig, fixed))
+        if want("undefined_name"):
+            uf, uo = c.py_undefined_names(fixed), c.py_undefined_names(orig)
+            if uf is not None and uo is not None:
+                new = uf - uo
+                if new:
+                    v["undefined_name"] = sorted("%s %s" % (k, a) for (k, a) in new.elements())[:10]
+        if want(*invariants.KINDS):
+            v.update(invariants.check(orig, fixed))
     return v
 
 
