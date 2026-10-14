@@ -28,34 +28,34 @@ and all 18 still reproduce on the latest releases (October 2026).
 
 | | Tool | Rule | What goes wrong | Issue |
 |---|---|---|---|---|
-| OX-1 | oxlint | `no-var` | Safe fix turns a redeclared `var` into two `const` declarations — **the code no longer parses** | [oxc#27694](https://github.com/oxc-project/oxc/issues/27694) |
-| OX-2 | oxlint | `unicorn/catch-error-name` | Safe fix renames `e` onto an existing `error` binding — **SyntaxError** | |
-| OX-3 | oxlint | `sort-keys` | Autofix appends its comma inside a trailing comment | |
-| OX-4 | oxlint | `no-setter-return` | Misses returning setters in `Object.defineProperty` descriptors | |
-| OX-5 | oxlint | `no-div-regex` | Misses `/=+$/`: a leading `=` with a quantifier | |
-| OX-6 | oxlint | `no-self-compare` | Reports `"Ā" !== "Ā"` (equal values, different source text) | |
-| OX-7 | oxlint | `no-magic-numbers` | Lifts literals under any unary operator, so `void 0`, `~5`, `!0` go unreported | |
-| OX-8 | oxlint | `id-length` | Misses destructuring assignment targets | |
-| OX-9 | oxlint | `no-shadow` | Misses a named function expression shadowing the variable it initialises | |
-| OX-10 | oxlint | `unicorn/consistent-function-scoping` | Reports functions that refer to themselves through their own binding | |
-| RF-1 | ruff | `RET505`–`RET508`, `PLW0120` | Dedent computed from the wrong comment: the fix fails with a syntax error, or **moves code into the `if` block** | [ruff#29381](https://github.com/astral-sh/ruff/issues/29381) · confirmed |
-| RF-2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | |
-| RF-3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | |
-| RF-4 | ruff | `UP035` | Safe fix deletes the comment on a multi-line import (here a `noqa`) | |
-| BI-1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | |
-| BI-2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | |
-| BI-3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | |
-| BI-4 | Biome | `no-return-assign` | Reports `return (m = …) && …`, which ESLint's default allows | |
+| OX‑1 | oxlint | `no-var` | Safe fix turns a redeclared `var` into two `const` declarations — **the code no longer parses** | [oxc#27694](https://github.com/oxc-project/oxc/issues/27694) |
+| OX‑2 | oxlint | `unicorn/catch-error-name` | Safe fix renames `e` onto an existing `error` binding — **SyntaxError** | |
+| OX‑3 | oxlint | `sort-keys` | Autofix appends its comma inside a trailing comment | |
+| OX‑4 | oxlint | `no-setter-return` | Misses returning setters in `Object.defineProperty` descriptors | |
+| OX‑5 | oxlint | `no-div-regex` | Misses `/=+$/`: a leading `=` with a quantifier | |
+| OX‑6 | oxlint | `no-self-compare` | Reports `"Ā" !== "Ā"` (equal values, different source text) | |
+| OX‑7 | oxlint | `no-magic-numbers` | Lifts literals under any unary operator, so `void 0`, `~5`, `!0` go unreported | |
+| OX‑8 | oxlint | `id-length` | Misses destructuring assignment targets | |
+| OX‑9 | oxlint | `no-shadow` | Misses a named function expression shadowing the variable it initialises | |
+| OX‑10 | oxlint | `unicorn/consistent-function-scoping` | Reports functions that refer to themselves through their own binding | |
+| RF‑1 | ruff | `RET505`–`RET508`, `PLW0120` | Dedent computed from the wrong comment: the fix fails with a syntax error, or **moves code into the `if` block** | [ruff#29381](https://github.com/astral-sh/ruff/issues/29381) · confirmed |
+| RF‑2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | |
+| RF‑3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | |
+| RF‑4 | ruff | `UP035` | Safe fix deletes the comment on a multi-line import (here a `noqa`) | |
+| BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | |
+| BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | |
+| BI‑3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | |
+| BI‑4 | Biome | `no-return-assign` | Reports `return (m = …) && …`, which ESLint's default allows | |
 
 ## Quick start
 
-Requires Python ≥ 3.12 and Node.js ≥ 20 ([uv](https://docs.astral.sh/uv/) is used if present).
+Requires Python ≥ 3.12 and Node.js ≥ 20. Install with [uv](https://docs.astral.sh/uv/) (or `pipx install git+…`):
 
 ```console
-$ uv tool install git+https://github.com/sariddangerpowers/linttwin   # or: pipx install git+...
-$ linttwin setup                 # installs ruff, flake8 + plugins, pylint, ESLint + unicorn, oxlint, Biome into ~/.linttwin
-$ linttwin check path/to/project # compares every rewrite with its original and tests the safe fixes
-$ linttwin findings              # do the 18 bugs above still reproduce on the latest releases?
+$ uv tool install git+https://github.com/sariddangerpowers/linttwin
+$ linttwin setup                  # installs the six linters into ~/.linttwin
+$ linttwin check path/to/project  # compares each rewrite with its original, tests its safe fixes
+$ linttwin findings               # do the 18 bugs still reproduce on the latest releases?
 ```
 
 `linttwin setup --pinned` installs the exact versions used in our study (ruff 0.17.0, oxlint 1.88.0, Biome 2.5.15,
@@ -77,18 +77,9 @@ The report lists every disagreeing rule with examples and every failing fix with
 
 ```mermaid
 flowchart LR
-    S[Source files] --> R[Rewrite<br/>ruff · oxlint · Biome]
-    S --> O[Original<br/>flake8 · pylint · ESLint]
-    M[(Rule mapping declared<br/>by the rewrite)] -.-> R
-    M -.-> O
-    R --> X{Match diagnostics<br/>file · rule · statement}
-    O --> X
-    X --> D[Missed and extra reports]
-    S --> F[Safe fixes on a copy]
-    F --> C{Oracles<br/>parses · comments · names<br/>reachability · block structure}
-    C --> V[Unsafe fixes,<br/>attributed to one rule]
-    D --> T[report.md]
-    V --> T
+    code([Your code]) --> rw[ruff · oxlint · Biome] & og[flake8 · pylint · ESLint]
+    rw & og --> m{Match by rule<br/>and statement} --> d[Missed and<br/>extra reports]
+    code --> fx[Safe fixes<br/>on a copy] --> o{Fix oracles} --> u[Unsafe fixes,<br/>one rule each]
 ```
 
 - **Rule pairs come from the rewrites themselves**, so nobody writes expected results by hand: the original tool's
