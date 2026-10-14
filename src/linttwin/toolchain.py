@@ -10,6 +10,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 PINNED_PY = {
@@ -75,6 +76,11 @@ def setup(prefix: Path = DEFAULT_PREFIX, pinned: bool = False, log=print) -> dic
     tc = Toolchain(prefix)
     versions = tc.versions()
     (prefix / "versions.json").write_text(json.dumps(versions, indent=2) + "\n")
+    # The ESLint -> Biome rule pairs come from `biome migrate eslint`, one rule at a time (about a minute). Read them
+    # once here, so the first `check` (and every run of a container image) does not pay for it.
+    from . import js_check
+    with tempfile.TemporaryDirectory(prefix="linttwin_setup_") as d:
+        js_check.biome_pairs(tc, js_check.Node(tc), d)
     return versions
 
 

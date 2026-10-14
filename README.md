@@ -64,14 +64,24 @@ ESLint 10.12.0, flake8 7.4.1, pylint 4.1.3).
 ```console
 $ linttwin check ~/src/debug ~/src/semver ~/src/pyflakes ~/src/flake8-simplify
 ruff    494 diagnostics agree with the original, 8 disagree across 5 rules; 1 file fails a safe-fix check
-oxlint  1528 diagnostics agree with the original, 186 disagree across 15 rules; 0 files fail a safe-fix check
-biome   303 diagnostics agree with the original, 277 disagree across 14 rules; 0 files fail a safe-fix check
+oxlint  1628 diagnostics agree with the original, 88 disagree across 8 rules; 0 files fail a safe-fix check
+biome   311 diagnostics agree with the original, 290 disagree across 13 rules; 0 files fail a safe-fix check
 
 report: linttwin-report/report.md
 ```
 
 The report lists every disagreeing rule with examples and every failing fix with its diff; the raw records are in
 `divergences.jsonl.gz` and `fixes.jsonl.gz`.
+
+### With Docker
+
+The image contains LintTwin and the linters at the study's versions; your code is mounted read-only.
+
+```console
+$ docker build -t linttwin https://github.com/sariddangerpowers/linttwin.git
+$ docker run --rm linttwin findings
+$ docker run --rm -v "$PWD:/src:ro" -v "$PWD/linttwin-report:/out" linttwin check /src --out /out
+```
 
 ## How it works
 
