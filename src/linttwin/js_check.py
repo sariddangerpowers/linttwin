@@ -204,7 +204,7 @@ def match(e_list, o_list):
         by_o[r].append(lns)
     both, e_left, o_left = collections.Counter(), [], []
     for r in set(by_e) | set(by_o):
-        es, os_ = sorted(by_e.get(r, [])), by_o.get(r, [])
+        es, os_ = sorted(by_e.get(r, [])), sorted(by_o.get(r, []))     # sorted: ties must not depend on output order
         used = [False] * len(os_)
         rest = []
         for ln in es:

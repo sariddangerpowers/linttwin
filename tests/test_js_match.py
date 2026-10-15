@@ -39,3 +39,11 @@ def test_match_is_a_multiset_match_with_two_line_tolerance():
     assert both["r"] == 3
     assert e_left == []
     assert o_left == [("r", 90)]
+
+
+def test_the_match_does_not_depend_on_the_order_of_the_rewrites_reports():
+    # Biome does not always print a file's diagnostics in the same order; an ESLint report equally close to two
+    # rewrite reports must pair the same way every time
+    es = [("style/useBlockStatements", 10), ("style/useBlockStatements", 14)]
+    os_ = [("style/useBlockStatements", (8,)), ("style/useBlockStatements", (12,)), ("style/useBlockStatements", (17,))]
+    assert match(es, os_) == match(es, list(reversed(os_)))
