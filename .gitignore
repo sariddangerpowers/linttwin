@@ -8,3 +8,8 @@ dist/
 build/
 node_modules/
 .pytest_cache/
+# private working notes for the authors and their agents; never published
+.private/
+CLAUDE.local.md
+CLAUDE.md
+.claude/
