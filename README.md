@@ -42,10 +42,10 @@ and all 18 still reproduce on the latest releases (October 2026).
 | RF‑2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
 | RF‑3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
 | RF‑4 | ruff | `UP035` | Safe fix deletes the comments inside a multi-line import (here a `noqa`) | [ruff#29400](https://github.com/astral-sh/ruff/issues/29400) |
-| BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | [biome#12370](https://github.com/biomejs/biome/issues/12370) |
-| BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | [biome#12370](https://github.com/biomejs/biome/issues/12370) |
-| BI‑3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | [biome#12370](https://github.com/biomejs/biome/issues/12370) |
-| BI‑4 | Biome | `no-return-assign` | Reports `return (m = …) && …`, which ESLint's default allows | [biome#12370](https://github.com/biomejs/biome/issues/12370) |
+| BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | [biome#12373](https://github.com/biomejs/biome/issues/12373) |
+| BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | [biome#12374](https://github.com/biomejs/biome/issues/12374) |
+| BI‑3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | [biome#12375](https://github.com/biomejs/biome/issues/12375) |
+| BI‑4 | Biome | `no-return-assign` | Reports `return (m = …) && …`, which ESLint's default allows | [biome#12376](https://github.com/biomejs/biome/issues/12376) |
 
 ## Quick start
 

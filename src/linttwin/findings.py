@@ -99,21 +99,21 @@ FINDINGS = [
          summary="`biome migrate eslint` maps `one-var` (default \"always\": combine declarations) to "
                  "`useSingleVarDeclarator`, which enforces the opposite.",
          reference="ESLint reports `let b` (should be combined); the migrated Biome config reports `let c = 1, d = 2`.",
-         found_in="80 of the top-100 npm packages", issue="https://github.com/biomejs/biome/issues/12370", check=("migration", {}),
+         found_in="80 of the top-100 npm packages", issue="https://github.com/biomejs/biome/issues/12373", check=("migration", {}),
          source="function f() {\n  let a = 1;\n  let b = 2;\n  return a + b;\n}\nfunction g() {\n  let c = 1, d = 2;\n  return c + d;\n}\nmodule.exports = [f, g];\n"),
     dict(id="BI-2", tool="biome", rule="eqeqeq", kind="migration drops checks",
          summary="`biome migrate eslint` maps `eqeqeq` to `noDoubleEquals` with `ignoreNull` left on, so `x == null` "
                  "is no longer reported.",
          reference="ESLint's eqeqeq (\"always\") reports `x == null`.", found_in="24 of the top-100 npm packages",
-         issue="https://github.com/biomejs/biome/issues/12370", check=("migration", {}),
+         issue="https://github.com/biomejs/biome/issues/12374", check=("migration", {}),
          source='function f(a, b, x) {\n  if (typeof a == "object" && typeof b == "object") return 1;\n  if (x == null) return 2;\n  return 3;\n}\nmodule.exports = f;\n'),
     dict(id="BI-3", tool="biome", rule="no-setter-return", kind="missed report",
          summary="`noSetterReturn` misses a returning setter inside an `Object.defineProperty` descriptor (as oxlint, OX-4).",
-         reference="ESLint reports it.", found_in="esbuild 0.28.2", issue="https://github.com/biomejs/biome/issues/12370", check=("migration", {}),
+         reference="ESLint reports it.", found_in="esbuild 0.28.2", issue="https://github.com/biomejs/biome/issues/12375", check=("migration", {}),
          source='const o = {};\nlet v;\nObject.defineProperty(o, "x", {\n  get: () => v,\n  set: (nv) => (v = nv),\n});\nmodule.exports = o;\n'),
     dict(id="BI-4", tool="biome", rule="no-return-assign", kind="false report",
          summary="`noReturnAssign` reports a parenthesised assignment in a `return`; ESLint's default `except-parens` allows it.",
-         reference="ESLint (and oxlint) do not report it.", found_in="debug", issue="https://github.com/biomejs/biome/issues/12370", check=("migration", {}),
+         reference="ESLint (and oxlint) do not report it.", found_in="debug", issue="https://github.com/biomejs/biome/issues/12376", check=("migration", {}),
          source="function f(n) {\n  let m;\n  return (m = n.match(/x(\\d+)/)) && Number(m[1]);\n}\nmodule.exports = f;\n"),
 ]
 
