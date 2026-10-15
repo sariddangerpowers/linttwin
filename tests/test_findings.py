@@ -9,7 +9,7 @@ CHECKS = {"fix_breaks_syntax", "fix_changes_comments", "parity", "migration", "f
 
 def test_ids_are_unique_and_tools_known():
     ids = [f["id"] for f in FINDINGS]
-    assert len(ids) == len(set(ids)) == 18
+    assert len(ids) == len(set(ids)) == 17
     assert {f["tool"] for f in FINDINGS} == {"ruff", "oxlint", "biome"}
 
 

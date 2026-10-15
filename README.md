@@ -22,30 +22,32 @@ automatic test:
 
 ## What it found
 
-Run on the 300 most-downloaded PyPI packages and the 100 most-downloaded npm packages, LintTwin found **18 bugs** that
+Run on the 300 most-downloaded PyPI packages and the 100 most-downloaded npm packages, LintTwin found **17 bugs** that
 we could not find documented or already tracked. Each has a minimal reproducer; `linttwin findings` re-runs them all,
-and all 18 still reproduce on the latest releases (October 2026).
+and all 17 still reproduce on the latest releases (October 2026). Maintainers have confirmed 12 and fixed 8 so far.
 
 | | Tool | Rule | What goes wrong | Issue |
 |---|---|---|---|---|
 | OX‑1 | oxlint | `no-var` | Safe fix turns a redeclared `var` into two `const` declarations — **the code no longer parses** | [oxc#27694](https://github.com/oxc-project/oxc/issues/27694) · fixed |
 | OX‑2 | oxlint | `unicorn/catch-error-name` | Safe fix renames `e` onto an existing `error` binding — **SyntaxError**, or silently captures an outer `error` | [oxc#27700](https://github.com/oxc-project/oxc/issues/27700) · fixed |
 | OX‑3 | oxlint | `sort-keys` | Autofix moves the object's trailing comma into a line comment | [oxc#27704](https://github.com/oxc-project/oxc/issues/27704) |
-| OX‑4 | oxlint | `no-setter-return` | Misses returning setters in `Object.defineProperty` descriptors | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) |
-| OX‑5 | oxlint | `no-div-regex` | Misses `/=+$/`: a leading `=` with a quantifier | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) |
+| OX‑4 | oxlint | `no-setter-return` | Misses returning setters in `Object.defineProperty` descriptors | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) · fixed |
+| OX‑5 | oxlint | `no-div-regex` | Misses `/=+$/`: a leading `=` with a quantifier | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) · fixed |
 | OX‑6 | oxlint | `no-self-compare` | Reports `"Ā" !== "Ā"` (equal values, different source text) | |
-| OX‑7 | oxlint | `no-magic-numbers` | Lifts literals under any unary operator, so `void 0`, `~5`, `!0` go unreported | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) |
-| OX‑8 | oxlint | `id-length` | Misses destructuring assignment targets | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) |
+| OX‑7 | oxlint | `no-magic-numbers` | Lifts literals under any unary operator, so `void 0`, `~5`, `!0` go unreported | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) · fixed |
+| OX‑8 | oxlint | `id-length` | Misses destructuring assignment targets | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) · fixed |
 | OX‑9 | oxlint | `no-shadow` | Misses a named function expression shadowing the variable it initialises | |
-| OX‑10 | oxlint | `unicorn/consistent-function-scoping` | Reports functions that refer to themselves through their own binding | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) |
+| OX‑10 | oxlint | `unicorn/consistent-function-scoping` | Reports functions that refer to themselves through their own binding | [oxc#27710](https://github.com/oxc-project/oxc/issues/27710) · fixed |
 | RF‑1 | ruff | `RET505`–`RET508`, `PLW0120` | Dedent computed from the wrong comment: the fix fails with a syntax error, or **moves code into the `if` block** | [ruff#29381](https://github.com/astral-sh/ruff/issues/29381) · fixed |
 | RF‑2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
 | RF‑3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
-| RF‑4 | ruff | `UP035` | Safe fix deletes the comments inside a multi-line import (here a `noqa`) | [ruff#29400](https://github.com/astral-sh/ruff/issues/29400) |
+| RF‑4 | ruff | `UP035` | Safe fix deletes the comments inside a multi-line import (here a `noqa`) | [ruff#29400](https://github.com/astral-sh/ruff/issues/29400) · confirmed |
 | BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | [biome#12373](https://github.com/biomejs/biome/issues/12373) |
 | BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | [biome#12374](https://github.com/biomejs/biome/issues/12374) |
-| BI‑3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | [biome#12375](https://github.com/biomejs/biome/issues/12375) |
-| BI‑4 | Biome | `no-return-assign` | Reports `return (m = …) && …`, which ESLint's default allows | [biome#12376](https://github.com/biomejs/biome/issues/12376) |
+| BI‑3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | [biome#12375](https://github.com/biomejs/biome/issues/12375) · confirmed |
+
+Biome declined one further report as intended behaviour: `noReturnAssign` flags `return (m = …) && …`, which
+ESLint's default allows ([discussion #12377](https://github.com/biomejs/biome/discussions/12377)).
 
 ## Quick start
 

@@ -111,10 +111,6 @@ FINDINGS = [
          summary="`noSetterReturn` misses a returning setter inside an `Object.defineProperty` descriptor (as oxlint, OX-4).",
          reference="ESLint reports it.", found_in="esbuild 0.28.2", issue="https://github.com/biomejs/biome/issues/12375", check=("migration", {}),
          source='const o = {};\nlet v;\nObject.defineProperty(o, "x", {\n  get: () => v,\n  set: (nv) => (v = nv),\n});\nmodule.exports = o;\n'),
-    dict(id="BI-4", tool="biome", rule="no-return-assign", kind="false report",
-         summary="`noReturnAssign` reports a parenthesised assignment in a `return`; ESLint's default `except-parens` allows it.",
-         reference="ESLint (and oxlint) do not report it.", found_in="debug", issue="https://github.com/biomejs/biome/issues/12376", check=("migration", {}),
-         source="function f(n) {\n  let m;\n  return (m = n.match(/x(\\d+)/)) && Number(m[1]);\n}\nmodule.exports = f;\n"),
 ]
 
 
