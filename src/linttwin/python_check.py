@@ -81,8 +81,10 @@ def pylint_rows(pylint, files, ids, rcfile, ext):
     r = subprocess.run([pylint, "--rcfile", rcfile, "--load-plugins=" + ",".join(ext), "--disable=all",
                         "--enable=" + ",".join(ids), "--output-format=json", "--jobs=1", "--persistent=n", "--score=n",
                         *files], capture_output=True, text=True)
+    want = set(ids)     # pylint also emits pragma and import messages that --disable=all cannot turn off (W0012, ...)
     try:
-        rows = [(m["path"], m["line"], "PL" + m["message-id"], m["message"]) for m in json.loads(r.stdout or "[]")]
+        rows = [(m["path"], m["line"], "PL" + m["message-id"], m["message"]) for m in json.loads(r.stdout or "[]")
+                if m["message-id"] in want]
     except json.JSONDecodeError:
         return [], (r.stdout + r.stderr)[-800:], False
     ok = not (r.returncode & 32) and "traceback (most recent call last)" not in r.stderr.lower()
