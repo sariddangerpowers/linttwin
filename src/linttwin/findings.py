@@ -137,7 +137,7 @@ def _oxlint_lines(tc, path, rule):
     cfg = path + ".oxlintrc.json"
     js_check.oxlint_config([rule], cfg)
     diags, _ = js_check.run_oxlint(tc.js("oxlint"), cfg, [path], cwd=os.path.dirname(path))
-    return sorted({lb.get("span", {}).get("line", 0) for d in diags if js_check.ox_rule(d.get("code")) == rule
+    return sorted({lb.get("span", {}).get("line", 0) for d in diags or [] if js_check.ox_rule(d.get("code")) == rule
                    for lb in (d.get("labels") or [{}])[:1]})
 
 

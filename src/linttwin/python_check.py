@@ -70,6 +70,10 @@ def flake8_rows(flake8, files, codes):
         p = line.split("\t", 4)
         if len(p) == 5 and p[1].isdigit():
             rows.append((p[0], int(p[1]), p[3], p[4]))
+    # with --exit-zero, flake8 exits non-zero only when it aborts; a plugin crash on one file aborts the whole run and
+    # is printed on stdout, with no reports for any file
+    if r.returncode != 0:
+        return [], (r.stderr + r.stdout)[-800:], False
     return rows, r.stderr, c.finished(r)
 
 

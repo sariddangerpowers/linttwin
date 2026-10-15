@@ -13,7 +13,7 @@ import tokenize
 import warnings
 
 CRASH_MARKERS = ("overflowed its stack", "panicked", "fatal runtime error", "failed during execution",
-                 "traceback (most recent call last)")
+                 "traceback (most recent call last)", "encountered an unexpected error")
 SELF_REPORTED_BUG = ("indicates a bug in ruff", "failed to converge", "fix introduced a syntax error")
 MAX_PY_BYTES = 1_000_000
 MAX_JS_BYTES = 300_000

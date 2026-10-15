@@ -148,7 +148,7 @@ def run_oxlint(oxlint, cfg, files, fix=False, cwd=None):
     try:
         diags = json.loads(r.stdout).get("diagnostics", [])
     except json.JSONDecodeError:
-        return [], (r.stdout + r.stderr)[-1500:]
+        return None, (r.stdout + r.stderr)[-1500:]
     for d in diags:                             # oxlint prints file names relative to its working directory
         if d.get("filename"):
             d["filename"] = os.path.normpath(os.path.join(cwd or os.getcwd(), d["filename"]))
@@ -257,8 +257,10 @@ def check_chunk(job):
             cfg = os.path.join(work, "oxlintrc.json")
             oxlint_config(sorted(pairs), cfg)
             diags, err = run_oxlint(opts["bin"], cfg, files, cwd=root)
-            if err.strip() and not diags and "panicked" in err:
+            if diags is None or any(m in err.lower() for m in c.CRASH_MARKERS):
+                # a crashed chunk is left out: its files would otherwise count as having no oxlint reports
                 out["crashes"].append({"tool": tool, "package": pkg, "file": "(chunk)", "stderr": err[-500:]})
+                return out
             bad = set()
             for d in diags:
                 rule = ox_rule(d.get("code"))
@@ -269,8 +271,15 @@ def check_chunk(job):
                 R[d["filename"]].append((rule, lines, d.get("message", "")))
             files = [f for f in files if f not in bad]
         else:
-            diags, _ = run_biome(opts["bin"], opts["cfg_dir"], files)
-            bad = {fn for title, fn, _, _ in diags if title == "parse"}
+            diags, r = run_biome(opts["bin"], opts["cfg_dir"], files)
+            if not c.finished(r):
+                out["crashes"].append({"tool": tool, "package": pkg, "file": "(chunk)", "stderr": r.stderr[-500:]})
+                return out
+            for title, fn, _, msg in diags:
+                if title.startswith("internalError"):
+                    out["crashes"].append({"tool": tool, "package": pkg, "file": os.path.relpath(fn, root),
+                                           "stderr": "%s: %s" % (title, msg[-400:])})
+            bad = {fn for title, fn, _, _ in diags if title == "parse" or title.startswith("internalError")}
             files = [f for f in files if f not in bad]
             for title, fn, ln, msg in diags:
                 if title.startswith("lint/") and fn not in bad:
@@ -325,10 +334,12 @@ def check_fixes(tool, pkg, root, files, st, R, opts, node, work, out):
     if tool == "oxlint":
         fcfg = os.path.join(work, "oxlintrc_fix.json")
         oxlint_config([r for r in opts["pairs"] if r not in FIX_IGNORE], fcfg)
-        run_oxlint(opts["bin"], fcfg, [os.path.join(fix_dir, r) for r in rels], fix=True, cwd=fix_dir)
+        diags, err = run_oxlint(opts["bin"], fcfg, [os.path.join(fix_dir, r) for r in rels], fix=True, cwd=fix_dir)
+        if diags is None or any(m in err.lower() for m in c.CRASH_MARKERS):
+            out["crashes"].append({"tool": tool, "package": pkg, "file": "(fix pass)", "stderr": err[-500:]})
     else:
         _, r = run_biome(opts["bin"], opts["cfg_dir"], [os.path.join(fix_dir, x) for x in rels], write=True)
-        if "panicked" in (r.stderr or "").lower():
+        if not c.finished(r):
             out["crashes"].append({"tool": tool, "package": pkg, "file": "(fix pass)", "stderr": r.stderr[-500:]})
     changed = [x for x in rels if c.rd(os.path.join(fix_dir, x)) != c.rd(os.path.join(orig_dir, x))]
     out["stats"]["files_changed"] += len(changed)
