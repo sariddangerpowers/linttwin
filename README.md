@@ -22,9 +22,11 @@ automatic test:
 
 ## What it found
 
-Run on the 300 most-downloaded PyPI packages and the 100 most-downloaded npm packages, LintTwin found **17 bugs** that
-we could not find documented or already tracked. Each has a minimal reproducer; `linttwin findings` re-runs them all,
-and all 17 still reproduce on the latest releases (October 2026). Maintainers have confirmed 12 and fixed 9 so far.
+We ran LintTwin on the 300 most-downloaded PyPI packages and the 100 most-downloaded npm packages, and triaged its
+output with LLM agents in two passes ([how](triage/)). The first pass found **17 bugs** that we could not find
+documented or already tracked. Each has a minimal reproducer; `linttwin findings` re-runs them all, and all 17 reproduce
+on the study's releases (ruff 0.17.1, released since, ships the fix for RF-1). Maintainers have confirmed 14 and fixed 9
+so far.
 
 | | Tool | Rule | What goes wrong | Issue |
 |---|---|---|---|---|
@@ -42,12 +44,19 @@ and all 17 still reproduce on the latest releases (October 2026). Maintainers ha
 | RF‑2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
 | RF‑3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · confirmed |
 | RF‑4 | ruff | `UP035` | Safe fix deletes the comments inside a multi-line import (here a `noqa`) | [ruff#29400](https://github.com/astral-sh/ruff/issues/29400) · fixed |
-| BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | [biome#12373](https://github.com/biomejs/biome/issues/12373) |
-| BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | [biome#12374](https://github.com/biomejs/biome/issues/12374) |
+| BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | [biome#12373](https://github.com/biomejs/biome/issues/12373) · confirmed |
+| BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | [biome#12374](https://github.com/biomejs/biome/issues/12374) · confirmed |
 | BI‑3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | [biome#12375](https://github.com/biomejs/biome/issues/12375) · confirmed |
 
 Biome declined one further report as intended behaviour: `noReturnAssign` flags `return (m = …) && …`, which
 ESLint's default allows ([discussion #12377](https://github.com/biomejs/biome/discussions/12377)).
+
+**Second pass.** The first pass covered the largest groups of disagreements and every rule with failing fixes. The
+second covered every other disagreeing rule: three LLM agents classified 257 rules, and one verifier agent per rewrite
+tried to refute each of the 55 bug candidates. Bugs held up in 47 rules, and re-running the reproducers before filing
+removed one more. We have reported 30 of them, ruff 10 (one more safe-fix bug, `UP034`, among them) and oxlint 20, in
+[ruff#29422](https://github.com/astral-sh/ruff/issues/29422) and [oxc#27746](https://github.com/oxc-project/oxc/issues/27746);
+maintainers have confirmed 29 and fixed 15 so far. The prompts, inputs and verdicts are in [triage/](triage/).
 
 ## Quick start
 
@@ -57,7 +66,7 @@ Requires Python ≥ 3.12 and Node.js ≥ 20. Install with [uv](https://docs.astr
 $ uv tool install git+https://github.com/sariddangerpowers/linttwin
 $ linttwin setup                  # installs the six linters into ~/.linttwin
 $ linttwin check path/to/project  # compares each rewrite with its original, tests its safe fixes
-$ linttwin findings               # do the 18 bugs still reproduce on the latest releases?
+$ linttwin findings               # do the 17 bugs still reproduce on the installed releases?
 ```
 
 `linttwin setup --pinned` installs the exact versions used in our study (ruff 0.17.0, oxlint 1.88.0, Biome 2.5.15,
@@ -114,7 +123,7 @@ $ linttwin check corpus/npm/* --tool biome
 ```
 
 Not every divergence is a bug: the report also surfaces documented differences, version lag behind newer ESLint or
-unicorn releases, and bugs in the original tools. The 18 findings above are the ones that survived that triage, each
+unicorn releases, and bugs in the original tools. The 17 findings above are the ones that survived that triage, each
 reduced to a reproducer and checked against the original tool's behaviour. One negative result is worth stating: across
 the 38,618 real files that ruff's safe fixes changed, we found no behaviour change; every file the structural oracle
 flagged turned out, on review, to be a correct fix. RF-1 needs an unusual comment layout: real code (sympy) triggers only
