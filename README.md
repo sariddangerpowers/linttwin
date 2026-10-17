@@ -25,7 +25,7 @@ automatic test:
 We ran LintTwin on the 300 most-downloaded PyPI packages and the 100 most-downloaded npm packages, and triaged its
 output with LLM agents in two passes ([how](triage/)). The first pass found **17 bugs** that we could not find
 documented or already tracked. Each has a minimal reproducer; `linttwin findings` re-runs them all, and all 17 reproduce
-on the study's releases (ruff 0.17.1, released since, ships the fix for RF-1). Maintainers have confirmed 14 and fixed 12
+on the study's releases (ruff 0.17.1, released since, ships the fix for RF-1). Maintainers have confirmed 14 and fixed 13
 so far.
 
 | | Tool | Rule | What goes wrong | Issue |
@@ -44,7 +44,7 @@ so far.
 | RF‑2 | ruff | `PLR5501` | Safe fix deletes the comment on an `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · fixed |
 | RF‑3 | ruff | `PLW0120` | Safe fix deletes the comment on a loop's `else:` line | [ruff#29395](https://github.com/astral-sh/ruff/issues/29395) · fixed |
 | RF‑4 | ruff | `UP035` | Safe fix deletes the comments inside a multi-line import (here a `noqa`) | [ruff#29400](https://github.com/astral-sh/ruff/issues/29400) · fixed |
-| BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | [biome#12373](https://github.com/biomejs/biome/issues/12373) · confirmed |
+| BI‑1 | Biome | `one-var` | `biome migrate eslint` maps it to a rule that **enforces the opposite** | [biome#12373](https://github.com/biomejs/biome/issues/12373) · fixed |
 | BI‑2 | Biome | `eqeqeq` | `biome migrate eslint` silently stops reporting `x == null` | [biome#12374](https://github.com/biomejs/biome/issues/12374) · fixed |
 | BI‑3 | Biome | `no-setter-return` | Misses returning setters in property descriptors (as OX-4) | [biome#12375](https://github.com/biomejs/biome/issues/12375) · confirmed |
 
