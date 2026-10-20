@@ -24,9 +24,7 @@ automatic test:
 
 We ran LintTwin on the 300 most-downloaded PyPI packages and the 100 most-downloaded npm packages, and triaged its
 output with LLM agents in two passes ([how](triage/)). The first pass found **17 bugs** that we could not find
-documented or already tracked. Each has a minimal reproducer; `linttwin findings` re-runs them all, and all 17 reproduce
-on the study's releases (ruff 0.17.1, released since, ships the fix for RF-1). Maintainers have confirmed 14 and fixed 13
-so far.
+documented or already tracked. Maintainers have confirmed 14 and fixed 13 so far.
 
 | | Tool | Rule | What goes wrong | Issue |
 |---|---|---|---|---|
@@ -56,7 +54,11 @@ second covered every other disagreeing rule: three LLM agents classified 257 rul
 tried to refute each of the 55 bug candidates. Bugs held up in 47 rules, and re-running the reproducers before filing
 removed one more. We have reported 30 of them, ruff 10 (one more safe-fix bug, `UP034`, among them) and oxlint 20, in
 [ruff#29422](https://github.com/astral-sh/ruff/issues/29422) and [oxc#27746](https://github.com/oxc-project/oxc/issues/27746);
-maintainers have confirmed 29 and fixed 15 so far. The prompts, inputs and verdicts are in [triage/](triage/).
+maintainers have confirmed 29 and fixed 19 so far. The prompts, inputs and verdicts are in [triage/](triage/).
+
+Every bug we reported, and the two first-pass bugs we have not (OX-6, OX-9), has a minimal reproducer: `linttwin
+findings` re-runs all 47 (OX-1 to OX-30, RF-1 to RF-14, BI-1 to BI-3), and all 47 reproduce on the study's releases.
+On the latest releases it shows which bugs are fixed; ruff 0.17.1, for example, ships the fix for RF-1.
 
 ## Quick start
 
@@ -66,7 +68,7 @@ Requires Python ≥ 3.12 and Node.js ≥ 20. Install with [uv](https://docs.astr
 $ uv tool install git+https://github.com/sariddangerpowers/linttwin
 $ linttwin setup                  # installs the six linters into ~/.linttwin
 $ linttwin check path/to/project  # compares each rewrite with its original, tests its safe fixes
-$ linttwin findings               # do the 17 bugs still reproduce on the installed releases?
+$ linttwin findings               # do the 47 bugs still reproduce on the installed releases?
 ```
 
 `linttwin setup --pinned` installs the exact versions used in our study (ruff 0.17.0, oxlint 1.88.0, Biome 2.5.15,
@@ -123,7 +125,7 @@ $ linttwin check corpus/npm/* --tool biome
 ```
 
 Not every divergence is a bug: the report also surfaces documented differences, version lag behind newer ESLint or
-unicorn releases, and bugs in the original tools. The 17 findings above are the ones that survived that triage, each
+unicorn releases, and bugs in the original tools. The findings above are the ones that survived that triage, each
 reduced to a reproducer and checked against the original tool's behaviour. One negative result is worth stating: across
 the 38,618 real files that ruff's safe fixes changed, we found no behaviour change; every file the structural oracle
 flagged turned out, on review, to be a correct fix. RF-1 needs an unusual comment layout: real code (sympy) triggers only
