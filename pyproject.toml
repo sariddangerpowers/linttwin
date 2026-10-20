@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "linttwin"
-version = "0.1.0"
+version = "0.2.0"
 description = "Do Rust-rewritten linters keep their promises? Differential and fix-safety testing of ruff, oxlint and Biome against flake8, pylint and ESLint."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -31,7 +31,7 @@ linttwin = "linttwin.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-linttwin = ["js_helper.mjs"]
+linttwin = ["js_helper.mjs", "known_causes.tsv"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

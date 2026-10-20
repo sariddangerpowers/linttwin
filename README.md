@@ -68,6 +68,7 @@ Requires Python ≥ 3.12 and Node.js ≥ 20. Install with [uv](https://docs.astr
 $ uv tool install git+https://github.com/sariddangerpowers/linttwin
 $ linttwin setup                  # installs the six linters into ~/.linttwin
 $ linttwin check path/to/project  # compares each rewrite with its original, tests its safe fixes
+$ linttwin triage                 # writes the rules without a known cause as cases for an LLM agent
 $ linttwin findings               # do the 47 bugs still reproduce on the installed releases?
 ```
 
@@ -75,16 +76,18 @@ $ linttwin findings               # do the 47 bugs still reproduce on the instal
 ESLint 10.12.0, flake8 7.4.1, pylint 4.1.3).
 
 ```console
-$ linttwin check ~/src/debug ~/src/semver ~/src/pyflakes ~/src/flake8-simplify
-ruff    494 diagnostics agree with the original, 8 disagree across 5 rules; 1 file fails a safe-fix check
-oxlint  1628 diagnostics agree with the original, 88 disagree across 8 rules; 0 files fail a safe-fix check
-biome   311 diagnostics agree with the original, 290 disagree across 13 rules; 0 files fail a safe-fix check
+$ linttwin check pyflakes flake8 flake8_simplify ajv semver eslint-scope --pylint
+ruff    573 diagnostics agree with the original, 160 disagree across 13 rules (13 with a known cause); 1 file fails a safe-fix check
+oxlint  7972 diagnostics agree with the original, 514 disagree across 19 rules (17 with a known cause); 8 files fail a safe-fix check
+biome   2617 diagnostics agree with the original, 1405 disagree across 19 rules (18 with a known cause); 0 files fail a safe-fix check
 
 report: linttwin-report/report.md
+next: `linttwin triage linttwin-report` writes the 3 rules without a known cause as cases for an LLM agent
 ```
 
-The report lists every disagreeing rule with examples and every failing fix with its diff; the raw records are in
-`divergences.jsonl.gz` and `fixes.jsonl.gz`.
+The report lists every disagreeing rule with examples and every failing fix with its diff, and marks the rules whose
+cause our study already found (here, among others, oxlint's `no-var` fix, OX-1, breaking 6 files of ajv). The raw
+records are in `divergences.jsonl.gz` and `fixes.jsonl.gz`.
 
 ### With Docker
 
@@ -95,6 +98,36 @@ $ docker build -t linttwin https://github.com/sariddangerpowers/linttwin.git
 $ docker run --rm linttwin findings
 $ docker run --rm -v "$PWD:/src:ro" -v "$PWD/linttwin-report:/out" linttwin check /src --out /out
 ```
+
+## Triage
+
+Most disagreements are not bugs: they are documented design differences, default options, lags behind newer releases
+of the originals, bugs in the original tools, or reports our matcher could not pair. LintTwin turns the rest into a
+protocol that an LLM agent, or a person, follows:
+
+1. **`check` marks the causes our study found.** [`known_causes.tsv`](src/linttwin/known_causes.tsv) holds one cause
+   for each of the 271 rules that disagreed in the study and the 19 rules whose safe fixes failed, with the issue of
+   every bug we reported. On the six packages above, 48 of the 51 disagreeing rules and every failing fix have one.
+2. **`triage` writes the other rules as cases**: counts, top messages and examples in source context, with the two
+   prompts of the protocol. A classifier gives every case one cause from a fixed list (BUG, TRACKED, DOC, LAG, REF,
+   CFG, ANCHOR, PARSE, UNCLEAR) and backs it with a documentation quote, an issue or a reproducer. A verifier then
+   tries to refute every bug.
+3. **`triage --collect` checks the answers** against the protocol (one valid cause per case, evidence for each, a
+   verifier verdict only for a bug candidate) and writes the tally.
+
+```console
+$ linttwin triage
+3 cases (3 rules that disagree, 0 failing safe fixes) in 1 files; 51 rules with a known cause left out
+$ # give an agent linttwin-report/triage/prompts/classify.md, then .../verify.md (we used Claude Code)
+$ linttwin triage --collect
+biome   19 rules: BUG 5 (53%), DOC 7 (24%), LAG 2 (18%), ANCHOR 4 (4%), CFG 1 (0%)
+oxlint  19 rules: TRACKED 2 (31%), LAG 5 (30%), BUG 8 (21%), ANCHOR 3 (17%), DOC 1 (2%)
+ruff    13 rules: CFG 2 (83%), DOC 8 (10%), TRACKED 1 (2%), ANCHOR 1 (2%), REF 1 (2%)
+new bugs: 3 (3 verified)
+```
+
+We found the study's bugs with LintTwin and this protocol. [triage/](triage/) holds the inputs, prompts and verdicts
+of both passes; the batch pass took six agents about four hours.
 
 ## How it works
 

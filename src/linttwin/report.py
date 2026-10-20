@@ -29,8 +29,17 @@ class Result:
         self.crashes.extend(out["crashes"])
 
 
-def write(results, out_dir, meta, max_examples=3):
+def _known(known, key, width=160):
+    cause, reason = known[key]
+    return "%s: %s" % (cause, reason if len(reason) <= width else reason[:width - 1] + "…")
+
+
+def write(results, out_dir, meta, max_examples=3, known=None):
+    """known: {(tool, kind, rule): (cause, reason)}, the causes the study found (triage.known_causes)."""
+    known = known or {}
     os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, "meta.json"), "w") as f:
+        json.dump(dict(meta, tools=[r.tool for r in results]), f, indent=1)
     with gzip.open(os.path.join(out_dir, "divergences.jsonl.gz"), "wt") as f:
         for r in results:
             for d in r.divergences:
@@ -45,7 +54,9 @@ def write(results, out_dir, meta, max_examples=3):
                 f.write(json.dumps(x) + "\n")
     L = ["# LintTwin report\n\n",
          "- Packages: %d; tool versions: %s\n" % (meta["packages"], ", ".join("%s %s" % kv for kv in meta["versions"].items())),
-         "- Raw records: `divergences.jsonl.gz`, `fixes.jsonl.gz`, `crashes.jsonl`\n\n"]
+         "- Raw records: `divergences.jsonl.gz`, `fixes.jsonl.gz`, `crashes.jsonl`\n",
+         "- Known causes: the causes the LintTwin study found, on its versions, are marked. `linttwin triage %s` "
+         "writes the other rules as cases, with the protocol for an LLM agent.\n\n" % out_dir]
     for r in results:
         L.append("## %s\n\n" % r.tool)
         L.append("- Files compared: %d; changed by safe fixes: %d; fixes violating a check: %d; crashes: %d; "
@@ -56,14 +67,23 @@ def write(results, out_dir, meta, max_examples=3):
             rows[(reference, rule)][side] += k
         div = [(key, cnt) for key, cnt in rows.items() if any(s != "both" for s in cnt)]
         if div:
-            L.append("### Rules that disagree with the original tool\n\n| reference | rule | agree | only %s | only reference | packages |\n"
-                     "|---|---|---|---|---|---|\n" % r.tool)
-            for (reference, rule), cnt in sorted(div, key=lambda kv: -sum(v for s, v in kv[1].items() if s != "both")):
-                only_tool = sum(v for s, v in cnt.items() if s.endswith("_only") and s != "reference_only")
-                pk = set().union(*(r.packages[(reference, rule, s)] for s in cnt if s != "both"))
-                L.append("| %s | `%s` | %d | %d | %d | %d |\n" % (reference, rule, cnt["both"], only_tool,
-                                                               cnt["reference_only"], len(pk)))
-            L.append("\n")
+            ranked = sorted(div, key=lambda kv: -sum(v for s, v in kv[1].items() if s != "both"))
+            for title, part, extra in (
+                    ("without a known cause", [kv for kv in ranked if (r.tool, "rule", kv[0][1]) not in known], False),
+                    ("with a cause known from the study", [kv for kv in ranked if (r.tool, "rule", kv[0][1]) in known],
+                     True)):
+                if not part:
+                    continue
+                L.append("### Rules that disagree with the original tool, %s\n\n| reference | rule | agree | only %s | "
+                         "only reference | packages |%s\n|---|---|---|---|---|---|%s\n"
+                         % (title, r.tool, " known cause |" if extra else "", "---|" if extra else ""))
+                for (reference, rule), cnt in part:
+                    only_tool = sum(v for s, v in cnt.items() if s.endswith("_only") and s != "reference_only")
+                    pk = set().union(*(r.packages[(reference, rule, s)] for s in cnt if s != "both"))
+                    L.append("| %s | `%s` | %d | %d | %d | %d |%s\n" % (
+                        reference, rule, cnt["both"], only_tool, cnt["reference_only"], len(pk),
+                        " %s |" % _known(known, (r.tool, "rule", rule)).replace("|", "/") if extra else ""))
+                L.append("\n")
             shown = collections.Counter()
             for d in r.divergences:
                 key = (d["rule"], d["side"])
@@ -80,11 +100,14 @@ def write(results, out_dir, meta, max_examples=3):
             for x in r.fixes:
                 for rule in (x["rules"] or ["(only in combination)"]):
                     by[rule].append(x)
-            L.append("### Safe fixes that fail a check\n\n| rule | files | packages | checks failed |\n|---|---|---|---|\n")
+            L.append("### Safe fixes that fail a check\n\n| rule | files | packages | checks failed | known cause |\n"
+                     "|---|---|---|---|---|\n")
             for rule, xs in sorted(by.items(), key=lambda kv: -len({x["package"] for x in kv[1]})):
                 kinds = collections.Counter(k for x in xs for k in x["kinds"])
-                L.append("| `%s` | %d | %d | %s |\n" % (rule, len(xs), len({x["package"] for x in xs}),
-                                                       ", ".join("%s ×%d" % kv for kv in kinds.most_common())))
+                key = (r.tool, "fix", rule)
+                L.append("| `%s` | %d | %d | %s | %s |\n" % (
+                    rule, len(xs), len({x["package"] for x in xs}), ", ".join("%s ×%d" % kv for kv in kinds.most_common()),
+                    _known(known, key).replace("|", "/") if key in known else "none: triage it"))
             L.append("\n")
             for rule, xs in sorted(by.items(), key=lambda kv: -len({x["package"] for x in kv[1]}))[:15]:
                 x = xs[0]

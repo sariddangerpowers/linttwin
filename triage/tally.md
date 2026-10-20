@@ -20,11 +20,11 @@ Counts from: re-run /root/lt-tail/rerun. Rules: 271.
 
 | Class | Rules | Disagreements | Share | only-rewrite | only-reference |
 |---|---:|---:|---:|---:|---:|
-| BUG | 22 | 497 | 8.8% | 67 | 430 |
+| BUG | 21 | 493 | 8.8% | 67 | 426 |
 | TRACKED | 6 | 2079 | 36.9% | 1969 | 110 |
 | REF | 1 | 4 | 0.1% | 0 | 4 |
 | DOC | 6 | 148 | 2.6% | 65 | 83 |
-| LAG | 14 | 664 | 11.8% | 107 | 557 |
+| LAG | 15 | 668 | 11.9% | 107 | 561 |
 | CFG | 1 | 10 | 0.2% | 0 | 10 |
 | GAP | 1 | 2 | 0.0% | 2 | 0 |
 | ANCHOR | 8 | 2217 | 39.4% | 472 | 1745 |
@@ -34,10 +34,10 @@ Counts from: re-run /root/lt-tail/rerun. Rules: 271.
 
 | Class | Rules | Disagreements | Share | only-rewrite | only-reference |
 |---|---:|---:|---:|---:|---:|
-| BUG | 14 | 7384 | 63.5% | 318 | 7066 |
+| BUG | 13 | 7286 | 62.6% | 220 | 7066 |
 | TRACKED | 1 | 70 | 0.6% | 0 | 70 |
 | REF | 1 | 2 | 0.0% | 0 | 2 |
-| DOC | 15 | 3249 | 27.9% | 895 | 2354 |
+| DOC | 16 | 3347 | 28.8% | 993 | 2354 |
 | LAG | 5 | 643 | 5.5% | 497 | 146 |
 | CFG | 5 | 150 | 1.3% | 117 | 33 |
 | ANCHOR | 7 | 136 | 1.2% | 54 | 82 |
@@ -66,7 +66,6 @@ Counts from: re-run /root/lt-tail/rerun. Rules: 271.
 | oxlint | prefer-template | BUG | high | 0 | 11 | 6 | oxlint skips every + expression that has any + ancestor, even across a conditional, call or function body, whereas ESLint merges only directly chained concatenations, so nested concatenations such as  |
 | oxlint | no-useless-assignment | BUG | med | 2 | 9 | 5 | oxlint treats a class field initializer as code that runs once, so it flags id = ++ID on a module counter (2 oxlint-only, minimatch), and it misses dead stores that ESLint finds (a chained o.p = x = f |
 | oxlint | no-param-reassign | BUG | high | 0 | 5 | 3 | oxlint walks only FormalParameter items, so reassigning a rest parameter (...args, ...children, ...plugins) is never reported; all 5 ESLint-only reports are rest parameters. |
-| oxlint | max-depth | BUG | high | 0 | 4 | 1 | oxlint treats any if whose parent is an if as an else-if continuation, so if (a) if (b) {} (b is the consequent) adds no depth; ESLint skips only real else-ifs, so js-yaml's if (ch === 33) if (!isName |
 | oxlint | unicorn/prefer-at | BUG | high | 2 | 1 | 3 | Two oxlint defects explain 2 of the 3 reports: x.slice(-1)[0] in an initializer is reported twice (once from the member-expression path and once from the call-expression path, commander), and it is ne |
 | oxlint | no-div-regex | BUG | high | 0 | 3 | 1 | filed |
 | oxlint | sort-imports | BUG | high | 0 | 3 | 1 | oxlint collects only the leading run of import declarations and stops at the first other statement, so imports after a statement such as TypeScript's hoisted var _a, _b, _c; are never checked (yargs-p |
@@ -82,7 +81,6 @@ Counts from: re-run /root/lt-tail/rerun. Rules: 271.
 | biome | style/useSingleVarDeclarator | BUG | high | 75 | 6578 | 82 | filed |
 | biome | complexity/useMaxParams | BUG | med | 0 | 267 | 40 | biome migrate eslint turns max-params (ESLint default max 3) into "useMaxParams": "error" without a max, and Biome's default is 4, so all 267 four-parameter functions stop being reported; even an expl |
 | biome | suspicious/noDoubleEquals | BUG | high | 0 | 193 | 24 | filed |
-| biome | suspicious/noReturnAssign | BUG | high | 98 | 0 | 10 | filed |
 | biome | correctness/noUndeclaredVariables | BUG | high | 78 | 0 | 6 | 67 of the 78 Biome-only reports are 'The arguments variable is undeclared' for arguments used inside class constructors and methods (argparse, whatwg-url), which is always defined there; plain functio |
 | biome | complexity/noArguments | BUG | high | 52 | 0 | 10 | Biome reports every use of arguments, including the non-computed member access arguments.length (48 of 52), which ESLint's prefer-rest-params deliberately allows, although Biome lists the rule as the  |
 | biome | style/noParameterAssign | BUG | med | 0 | 12 | 6 | Biome does not check parameters bound by destructuring, so cwd = toPath(cwd) in function ({ cwd = ... } = {}), v = ... in ([k, v]) => and minimatch's ([$0, ext = '']) are ESLint-only (11 of 12); the l |

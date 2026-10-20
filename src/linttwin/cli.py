@@ -3,6 +3,8 @@
     linttwin setup [--pinned]                 install the linters to compare (latest, or the paper's versions)
     linttwin check DIR [DIR ...]              compare ruff / oxlint / Biome with the tools they replace, and test
                                               their safe fixes, on the given projects
+    linttwin triage [REPORT]                  write the rules without a known cause as cases, with the protocol
+                                              for an LLM agent; --collect checks the agents' verdicts and tallies
     linttwin findings                         re-run the reproducers of every bug LintTwin found
     linttwin corpus --dir corpus              download the paper's corpus (top PyPI and npm packages)
 """
@@ -74,18 +76,51 @@ def cmd_check(a):
         results.append(res)
     if not results:
         sys.exit("nothing to check (no .py or .js files, or no linters installed)")
-    path = report.write(results, a.out, {"packages": len(dirs), "versions": tc.versions()})
+    from .triage import known_causes
+    known = known_causes()
+    path = report.write(results, a.out, {"packages": len(dirs), "versions": tc.versions()}, known=known)
     print()
+    todo = 0
     for r in results:
         ndiv = sum(k for (_, _, side), k in r.counts.items() if side != "both")
         nagree = sum(k for (_, _, side), k in r.counts.items() if side == "both")
-        rules = len({(ref, rule) for (ref, rule, side), k in r.counts.items() if side != "both" and k})
-        print("%s%-7s%s %s%d%s diagnostics agree with the original, %s%d%s disagree across %d rules; "
-              "%s%d%s %s a safe-fix check" % (BOLD, r.tool, RESET, GREEN, nagree, RESET, RED if ndiv else "", ndiv,
-                                              RESET, rules, RED if r.stats["fix_violations"] else "",
-                                              r.stats["fix_violations"], RESET,
-                                              "file fails" if r.stats["fix_violations"] == 1 else "files fail"))
+        rules = {rule for (ref, rule, side), k in r.counts.items() if side != "both" and k}
+        nknown = sum((r.tool, "rule", rule) in known for rule in rules)
+        fix_rules = {rule for x in r.fixes for rule in x["rules"] or ["(only in combination)"]}
+        todo += len(rules) - nknown + sum((r.tool, "fix", rule) not in known for rule in fix_rules)
+        print("%s%-7s%s %s%d%s diagnostics agree with the original, %s%d%s disagree across %d rules (%d with a known "
+              "cause); %s%d%s %s a safe-fix check" % (BOLD, r.tool, RESET, GREEN, nagree, RESET, RED if ndiv else "",
+                                                      ndiv, RESET, len(rules), nknown,
+                                                      RED if r.stats["fix_violations"] else "",
+                                                      r.stats["fix_violations"], RESET,
+                                                      "file fails" if r.stats["fix_violations"] == 1 else "files fail"))
     print("\nreport: %s" % path)
+    if todo:
+        print("next: `linttwin triage %s` writes the %d rules without a known cause as cases for an LLM agent"
+              % (a.out, todo))
+
+
+def cmd_triage(a):
+    from . import triage
+    if not os.path.exists(os.path.join(a.report, "divergences.jsonl.gz")):
+        sys.exit("no LintTwin report in %s (run `linttwin check` first)" % a.report)
+    tdir = os.path.join(a.report, "triage")
+    if a.collect:
+        if not os.path.exists(os.path.join(tdir, "index.json")):
+            sys.exit("no triage in %s (run `linttwin triage %s` first)" % (a.report, a.report))
+        summary, problems = triage.collect(a.report)
+        print("\n".join(summary))
+        if problems:
+            print("\n%s%d problems%s:" % (RED, len(problems), RESET))
+            print("\n".join("  " + p for p in problems[:30]))
+        print("\ntally: %s" % os.path.join(tdir, "tally.md"))
+        sys.exit(1 if problems else 0)
+    index = triage.write(a.report, Toolchain(a.prefix), include_known=a.all, batch=a.batch, limit=a.limit)
+    n_fix = sum(c["kind"] == "fix" for c in index["cases"])
+    print("%d cases (%d rules that disagree, %d failing safe fixes) in %d files; %d rules with a known cause left out"
+          % (len(index["cases"]), len(index["cases"]) - n_fix, n_fix, len(index["files"]), len(index["known"])))
+    print("next: give an LLM agent %s, then %s, then run `linttwin triage %s --collect`"
+          % (os.path.join(tdir, "prompts", "classify.md"), os.path.join(tdir, "prompts", "verify.md"), a.report))
 
 
 def cmd_findings(a):
@@ -139,6 +174,13 @@ def main(argv=None):
     s.add_argument("--out", default="linttwin-report", help="report directory (default %(default)s)")
     s.add_argument("--jobs", type=int, default=os.cpu_count() or 2)
     s.set_defaults(fn=cmd_check)
+    s = sub.add_parser("triage", help="write a report's rules as cases for an LLM agent, or collect its verdicts")
+    s.add_argument("report", nargs="?", default="linttwin-report", help="report directory of check (default %(default)s)")
+    s.add_argument("--collect", action="store_true", help="check the agents' verdicts and tally the causes")
+    s.add_argument("--all", action="store_true", help="also write the rules whose cause the study already found")
+    s.add_argument("--batch", type=int, default=25, help="cases per file (default %(default)s)")
+    s.add_argument("--limit", type=int, help="write only the N largest cases")
+    s.set_defaults(fn=cmd_triage)
     s = sub.add_parser("findings", help="re-run the reproducers of the bugs LintTwin found")
     s.add_argument("--tool", choices=["ruff", "oxlint", "biome"])
     s.set_defaults(fn=cmd_findings)
