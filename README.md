@@ -56,8 +56,15 @@ removed one more. We have reported 30 of them, ruff 10 (one more safe-fix bug, `
 [ruff#29422](https://github.com/astral-sh/ruff/issues/29422) and [oxc#27746](https://github.com/oxc-project/oxc/issues/27746);
 maintainers have confirmed 29 and fixed 19 so far. The prompts, inputs and verdicts are in [triage/](triage/).
 
+**With `linttwin triage`.** When we tested the triage command on six packages (20 Oct), the protocol's two agents
+found three more bugs, all in ajv 6.15.0, which the study's corpus does not contain: oxlint's `no-useless-concat` misses
+operands in parentheses and `no-unassigned-vars` reports variables that a later `var` declaration assigns
+([oxc#27982](https://github.com/oxc-project/oxc/issues/27982)), and Biome's `noSwitchDeclarations` reports `var`
+declarations, which ESLint's `no-case-declarations` allows ([biome#12475](https://github.com/biomejs/biome/issues/12475)).
+
 Every bug we reported, and the two first-pass bugs we have not (OX-6, OX-9), has a minimal reproducer: `linttwin
-findings` re-runs all 47 (OX-1 to OX-30, RF-1 to RF-14, BI-1 to BI-3), and all 47 reproduce on the study's releases.
+findings` re-runs all 50 (OX-1 to OX-32, RF-1 to RF-14, BI-1 to BI-3 and BI-5), and all 50 reproduce on the
+study's releases.
 On the latest releases it shows which bugs are fixed; ruff 0.17.1, for example, ships the fix for RF-1.
 
 ## Quick start
@@ -69,7 +76,7 @@ $ uv tool install git+https://github.com/sariddangerpowers/linttwin
 $ linttwin setup                  # installs the six linters into ~/.linttwin
 $ linttwin check path/to/project  # compares each rewrite with its original, tests its safe fixes
 $ linttwin triage                 # writes the rules without a known cause as cases for an LLM agent
-$ linttwin findings               # do the 47 bugs still reproduce on the installed releases?
+$ linttwin findings               # do the 50 bugs still reproduce on the installed releases?
 ```
 
 `linttwin setup --pinned` installs the exact versions used in our study (ruff 0.17.0, oxlint 1.88.0, Biome 2.5.15,

@@ -189,6 +189,17 @@ FINDINGS = [
          reference="ESLint's test for `var c, d, a, b` expects two reports, and oxlint ports that test.",
          found_in="top-100 npm packages", issue=OXC_SECOND_PASS, check=("parity", {"count": True}),
          source="var c, a, b;\n"),
+    # --- oxlint: found by `linttwin triage` on ajv 6.15.0, outside the study's corpus (20 Oct 2026)
+    dict(id="OX-31", tool="oxlint", rule="no-useless-concat", kind="missed report",
+         summary="Misses a concatenation of literals when an operand is in parentheses: `'a' + ('b')`.",
+         reference="ESLint reports it; its own test `(foo + 'a') + ('b' + 'c')` expects two reports.",
+         found_in="ajv 6.15.0", issue="https://github.com/oxc-project/oxc/issues/27982", check=("parity", {}),
+         source="var a = 'a' + ('b');\nvar b = ('a') + 'b';\n"),
+    dict(id="OX-32", tool="oxlint", rule="no-unassigned-vars", kind="false report",
+         summary="Reports a variable that a later `var` redeclaration assigns: `var x; var x = k;`.",
+         reference="ESLint counts the redeclaration's initializer as a write.",
+         found_in="ajv 6.15.0", issue="https://github.com/oxc-project/oxc/issues/27982", check=("parity", {}),
+         source="function f(k) {\n  var x;\n  var x = k;\n  return x;\n}\nf(1);\n"),
     # --- ruff: safe fixes
     dict(id="RF-1", tool="ruff", rule="RET505", kind="safe fix changes behaviour",
          summary="When an `else` body starts with two or more comments indented differently from the code, the dedent is "
@@ -290,6 +301,11 @@ FINDINGS = [
          summary="`noSetterReturn` misses a returning setter inside an `Object.defineProperty` descriptor (as oxlint, OX-4).",
          reference="ESLint reports it.", found_in="esbuild 0.28.2", issue="https://github.com/biomejs/biome/issues/12375", check=("migration", {}),
          source='const o = {};\nlet v;\nObject.defineProperty(o, "x", {\n  get: () => v,\n  set: (nv) => (v = nv),\n});\nmodule.exports = o;\n'),
+    dict(id="BI-5", tool="biome", rule="no-case-declarations", kind="false report",
+         summary="`noSwitchDeclarations` reports a `var` declaration in a switch clause, which ESLint documents as valid.",
+         reference="ESLint's `no-case-declarations` covers only lexical declarations.", found_in="ajv 6.15.0",
+         issue="https://github.com/biomejs/biome/issues/12475", check=("migration", {}),
+         source="var a = 1;\nswitch (a) {\n  case 1:\n    var x = 1;\n    break;\n}\n"),
 ]
 
 
