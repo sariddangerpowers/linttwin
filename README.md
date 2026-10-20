@@ -8,6 +8,8 @@ LintTwin tests <a href="https://github.com/astral-sh/ruff">ruff</a>, <a href="ht
 and checks that their "safe" autofixes are actually safe.
 </p>
 
+<p align="center"><a href="https://youtu.be/bCPrwDUF-8I">Demo video (3½ min)</a></p>
+
 ---
 
 Rust rewrites of developer tools are fast, popular, and increasingly run unattended: in pre-commit hooks, in CI, and
